@@ -68,15 +68,17 @@ def admin_dashboard():
     total_notes = len(notes)
     total_tests = len(tests)
     viewed_notes = sum(1 for n in notes if n.get('viewed'))
-    viewed_tests = sum(1 for t in tests if t.get('viewed'))
+    attended_tests = sum(1 for t in tests if t.get('viewed'))
 
-    return render_template('admin_dashboard.html',
-                           notes=notes,
-                           tests=tests,
-                           total_notes=total_notes,
-                           total_tests=total_tests,
-                           viewed_notes=viewed_notes,
-                           viewed_tests=viewed_tests)
+    return render_template(
+        'admin_dashboard.html',
+        notes=notes,
+        tests=tests,
+        total_notes=total_notes,
+        total_tests=total_tests,
+        viewed_notes=viewed_notes,
+        attended_tests=attended_tests
+    )
 
 @app.route('/upload_note', methods=['POST'])
 def upload_note():
@@ -126,8 +128,12 @@ def delete_test(test_id):
         return redirect(url_for('admin_login'))
     tests_db.remove(doc_ids=[test_id])
     return redirect(url_for('admin_dashboard'))
+
 @app.route('/edit_note/<int:note_id>', methods=['GET', 'POST'])
 def edit_note(note_id):
+    if 'admin' not in session:
+        return redirect(url_for('admin_login'))
+
     note = notes_db.get(doc_id=note_id)
     if request.method == 'POST':
         new_title = request.form['title']
@@ -137,6 +143,9 @@ def edit_note(note_id):
 
 @app.route('/edit_test/<int:test_id>', methods=['GET', 'POST'])
 def edit_test(test_id):
+    if 'admin' not in session:
+        return redirect(url_for('admin_login'))
+
     test = tests_db.get(doc_id=test_id)
     if request.method == 'POST':
         new_title = request.form['title']
@@ -144,7 +153,6 @@ def edit_test(test_id):
         tests_db.update({'title': new_title, 'link': new_link}, doc_ids=[test_id])
         return redirect(url_for('admin_dashboard'))
     return render_template('edit_test.html', test=test)
-
 
 @app.route('/logout')
 def logout():
