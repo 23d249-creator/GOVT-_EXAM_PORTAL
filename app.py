@@ -126,6 +126,25 @@ def delete_test(test_id):
         return redirect(url_for('admin_login'))
     tests_db.remove(doc_ids=[test_id])
     return redirect(url_for('admin_dashboard'))
+@app.route('/edit_note/<int:note_id>', methods=['GET', 'POST'])
+def edit_note(note_id):
+    note = notes_db.get(doc_id=note_id)
+    if request.method == 'POST':
+        new_title = request.form['title']
+        notes_db.update({'title': new_title}, doc_ids=[note_id])
+        return redirect(url_for('admin_dashboard'))
+    return render_template('edit_note.html', note=note)
+
+@app.route('/edit_test/<int:test_id>', methods=['GET', 'POST'])
+def edit_test(test_id):
+    test = tests_db.get(doc_id=test_id)
+    if request.method == 'POST':
+        new_title = request.form['title']
+        new_link = request.form['link']
+        tests_db.update({'title': new_title, 'link': new_link}, doc_ids=[test_id])
+        return redirect(url_for('admin_dashboard'))
+    return render_template('edit_test.html', test=test)
+
 
 @app.route('/logout')
 def logout():
